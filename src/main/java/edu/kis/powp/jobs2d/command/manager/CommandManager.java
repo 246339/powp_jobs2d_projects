@@ -11,7 +11,7 @@ import edu.kis.powp.observer.Publisher;
 /**
  * Driver command Manager.
  */
-public class DriverCommandManager {
+public class CommandManager {
     private DriverCommand currentCommand = null;
 
     private Publisher changePublisher = new Publisher();
