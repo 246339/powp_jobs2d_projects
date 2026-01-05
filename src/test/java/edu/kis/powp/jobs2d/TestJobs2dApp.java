@@ -18,6 +18,7 @@ import edu.kis.powp.jobs2d.events.SelectLoadSecretCommandOptionListener;
 import edu.kis.powp.jobs2d.events.SelectRunCurrentCommandOptionListener;
 import edu.kis.powp.jobs2d.events.SelectTestFigure2OptionListener;
 import edu.kis.powp.jobs2d.events.SelectTestFigureOptionListener;
+import edu.kis.powp.jobs2d.events.CanvasMouseListener;
 import edu.kis.powp.jobs2d.features.CommandsFeature;
 import edu.kis.powp.jobs2d.features.DrawerFeature;
 import edu.kis.powp.jobs2d.features.DriverFeature;
@@ -46,6 +47,7 @@ public class TestJobs2dApp {
      * @param application Application context.
      */
     private static void setupCommandTests(Application application) {
+        application.getFreePanel().addMouseListener(new CanvasMouseListener());
         application.addTest("Load secret command", new SelectLoadSecretCommandOptionListener());
 
         application.addTest("Run command", new SelectRunCurrentCommandOptionListener(DriverFeature.getDriverManager()));
