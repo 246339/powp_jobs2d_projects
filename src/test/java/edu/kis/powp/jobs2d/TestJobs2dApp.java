@@ -18,6 +18,7 @@ import edu.kis.powp.jobs2d.events.*;
 import edu.kis.powp.jobs2d.features.CommandsFeature;
 import edu.kis.powp.jobs2d.features.DrawerFeature;
 import edu.kis.powp.jobs2d.features.DriverFeature;
+import edu.kis.powp.jobs2d.features.MonitoringFeature;
 
 public class TestJobs2dApp {
     private final static Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
@@ -63,18 +64,34 @@ public class TestJobs2dApp {
         DriverFeature.addDriver("Logger driver", loggerDriver);
 
         DrawPanelController drawerController = DrawerFeature.getDrawerController();
+
         Job2dDriver basicLineDriver = new LineDriverAdapter(drawerController, LineFactory.getBasicLine(), "basic");
         DriverFeature.addDriver("Basic line Simulator", basicLineDriver);
-        DriverFeature.getDriverManager().setCurrentDriver(basicLineDriver);
+        // Add monitoring to basic line driver
+        Job2dDriver monitoredBasicLineDriver = MonitoringFeature.monitoredDriver(basicLineDriver, "Basic line");
+        DriverFeature.addDriver("Monitored Basic line Simulator", monitoredBasicLineDriver);
+
+        DriverFeature.getDriverManager().setCurrentDriver(monitoredBasicLineDriver);
 
         Job2dDriver specialLineDriver = new LineDriverAdapter(drawerController, LineFactory.getSpecialLine(), "special");
         DriverFeature.addDriver("Special line Simulator", specialLineDriver);
+        // Add monitoring to special line driver
+        Job2dDriver monitoredSpecialLineDriver = MonitoringFeature.monitoredDriver(specialLineDriver, "Special line");
+        DriverFeature.addDriver("Monitored Special line Simulator", monitoredSpecialLineDriver);
 
         Job2dDriver basicLineWithLoggerDriver = new DriverComposite(Arrays.asList(basicLineDriver, loggerDriver));
         DriverFeature.addDriver("Logger + Basic line", basicLineWithLoggerDriver);
+        // Add monitoring to composite driver
+        Job2dDriver monitoredBasicLineWithLoggerDriver = MonitoringFeature.monitoredDriver(basicLineWithLoggerDriver,
+            "Logger + Basic line");
+        DriverFeature.addDriver("Monitored Logger + Basic line", monitoredBasicLineWithLoggerDriver);
 
         Job2dDriver specialLineWithLoggerDriver = new DriverComposite(Arrays.asList(specialLineDriver, loggerDriver));
         DriverFeature.addDriver("Logger + Special line", specialLineWithLoggerDriver);
+        // Add monitoring to composite driver
+        Job2dDriver monitoredSpecialLineWithLoggerDriver = MonitoringFeature.monitoredDriver(specialLineWithLoggerDriver,
+            "Logger + Special line");
+        DriverFeature.addDriver("Monitored Logger + Special line", monitoredSpecialLineWithLoggerDriver);
 
         DriverFeature.updateDriverInfo();
     }
@@ -119,6 +136,7 @@ public class TestJobs2dApp {
                 CommandsFeature.setupCommandManager();
 
                 DriverFeature.setupDriverPlugin(app);
+                MonitoringFeature.setupMonitoringPlugin(app, logger);
                 setupDrivers(app);
                 setupPresetTests(app);
                 setupCommandTests(app);
