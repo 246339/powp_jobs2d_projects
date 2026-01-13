@@ -1,13 +1,10 @@
 package edu.kis.powp.jobs2d.command.manager;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
-import edu.kis.powp.jobs2d.Job2dDriver;
 import edu.kis.powp.jobs2d.command.CompoundCommand;
 import edu.kis.powp.jobs2d.command.DriverCommand;
-import edu.kis.powp.jobs2d.command.ICompoundCommand;
+import edu.kis.powp.jobs2d.visitor.CommandCounterVisitor;
 import edu.kis.powp.observer.Publisher;
 
 /**
@@ -16,7 +13,7 @@ import edu.kis.powp.observer.Publisher;
 public class CommandManager {
     private DriverCommand currentCommand = null;
 
-    private Publisher changePublisher = new Publisher();
+    private final Publisher changePublisher = new Publisher();
 
     /**
      * Set current command.
@@ -35,35 +32,8 @@ public class CommandManager {
      * @param name        name of the command.
      */
     public synchronized void setCurrentCommand(List<DriverCommand> commandList, String name) {
-        setCurrentCommand(new ICompoundCommand() {
-
-            List<DriverCommand> driverCommands = commandList;
-
-            @Override
-            public void execute(Job2dDriver driver) {
-                driverCommands.forEach((c) -> c.execute(driver));
-            }
-
-            @Override
-            public Iterator<DriverCommand> iterator() {
-                return driverCommands.iterator();
-            }
-
-            @Override
-            public String toString() {
-                return name;
-            }
-
-            @Override
-            public ICompoundCommand copy() {
-                List<DriverCommand> copied = new ArrayList<>();
-                for (DriverCommand c : driverCommands) {
-                    copied.add(c.copy());
-                }
-                return CompoundCommand.fromListOfCommands(copied);
-            }
-        });
-
+        CompoundCommand compoundCommand = CompoundCommand.fromListOfCommands(commandList, name);
+        setCurrentCommand(compoundCommand);
     }
 
     /**
@@ -82,8 +52,15 @@ public class CommandManager {
     public synchronized String getCurrentCommandString() {
         if (getCurrentCommand() == null) {
             return "No command loaded";
-        } else
-            return getCurrentCommand().toString();
+        } else {
+            CommandCounterVisitor.CommandStats stats = CommandCounterVisitor.countCommands(getCurrentCommand());
+            StringBuilder sb = new StringBuilder(getCurrentCommand().toString());
+            sb.append("\n\nStats:\n");
+            sb.append("Total commands: ").append(stats.getCount()).append("\n");
+            sb.append("OperateTo count: ").append(stats.getOperateToCount()).append("\n");
+            sb.append("SetPosition count: ").append(stats.getSetPositionCount()).append("\n");
+            return sb.toString();
+        }
     }
 
     public Publisher getChangePublisher() {
