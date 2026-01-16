@@ -24,7 +24,7 @@ public class CommandManagerWindow extends JFrame implements WindowComponent {
     private JTextArea observerListField;
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 9204679248304669948L;
 
@@ -71,6 +71,14 @@ public class CommandManagerWindow extends JFrame implements WindowComponent {
         c.gridx = 0;
         c.weighty = 1;
         content.add(btnClearObservers, c);
+
+        JButton btnImportCommand = new JButton("Import JSON");
+        btnImportCommand.addActionListener(new SelectImportCommandOptionListener(commandManager));
+        c.fill = GridBagConstraints.BOTH;
+        c.weightx = 1;
+        c.gridx = 0;
+        c.weighty = 1;
+        content.add(btnImportCommand, c);
     }
 
     private void clearCommand() {
