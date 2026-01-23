@@ -16,6 +16,11 @@ public class DrawerFeature implements IFeature {
         setupDrawerPlugin(application);
     }
 
+    /**
+     * Setup Drawer Plugin and add to application.
+     *
+     * @param application Application context.
+     */
     private static void setupDrawerPlugin(Application application) {
         SelectClearPanelOptionListener selectClearPanelOptionListener = new SelectClearPanelOptionListener();
 
@@ -26,6 +31,11 @@ public class DrawerFeature implements IFeature {
         drawerController.initialize(application.getFreePanel());
     }
 
+    /**
+     * Get controller of application drawing panel.
+     *
+     * @return drawPanelController.
+     */
     public static DrawPanelController getDrawerController() {
         return drawerController;
     }

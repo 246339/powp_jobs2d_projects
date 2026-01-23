@@ -23,16 +23,30 @@ public class DriverFeature implements IFeature {
         setupDriverPlugin(application);
     }
 
+    /**
+     * Setup jobs2d drivers Plugin and add to application.
+     *
+     * @param application Application context.
+     */
     private static void setupDriverPlugin(Application application) {
         app = application;
         app.addComponentMenu(DriverFeature.class, "Drivers");
     }
 
+    /**
+     * Add driver to context, create button in driver menu.
+     *
+     * @param name   Button name.
+     * @param driver VisitableJob2dDriver object.
+     */
     public static void addDriver(String name, VisitableJob2dDriver driver) {
         SelectDriverMenuOptionListener listener = new SelectDriverMenuOptionListener(driver, driverManager);
         app.addComponentMenuElement(DriverFeature.class, name, listener);
     }
 
+    /**
+     * Update driver info.
+     */
     public static void updateDriverInfo() {
         app.updateInfo(driverManager.getCurrentDriver().toString());
     }

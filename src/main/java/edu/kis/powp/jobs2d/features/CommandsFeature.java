@@ -23,6 +23,11 @@ public class CommandsFeature implements IFeature {
         commandManager.getChangePublisher().addSubscriber(loggerObserver);
     }
 
+    /**
+     * Get manager of application driver command.
+     *
+     * @return plotterCommandManager.
+     */
     public static CommandManager getDriverCommandManager() {
         return commandManager;
     }

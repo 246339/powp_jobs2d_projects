@@ -32,7 +32,7 @@ public class CanvasFeature implements IFeature {
         return canvasOverlay.getController();
     }
 
-    public static void setupCanvasPlugin(Application app) {
+    private static void setupCanvasPlugin(Application app) {
         CanvasFeature.app = app;
         JPanel panel = app.getFreePanel();
         // OverlayLayout is used to add the canvas overlay on top of the drawing panel
