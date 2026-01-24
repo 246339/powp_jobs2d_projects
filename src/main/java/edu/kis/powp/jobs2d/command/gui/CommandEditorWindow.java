@@ -2,11 +2,7 @@ package edu.kis.powp.jobs2d.command.gui;
 
 import edu.kis.powp.jobs2d.command.CompoundCommand;
 import edu.kis.powp.jobs2d.command.DriverCommand;
-import edu.kis.powp.jobs2d.command.ICompoundCommand;
-import edu.kis.powp.jobs2d.command.OperateToCommand;
-import edu.kis.powp.jobs2d.command.SetPositionCommand;
 import edu.kis.powp.jobs2d.command.manager.CommandManager;
-import edu.kis.powp.jobs2d.visitor.CommandVisitor;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -16,7 +12,6 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class CommandEditorWindow extends JFrame {
@@ -141,17 +136,17 @@ public class CommandEditorWindow extends JFrame {
         isUpdatingGUI = true;
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
 
-        if (node != null && node.getUserObject() instanceof EditableCommandNode) {
-            EditableCommandNode commandNode = (EditableCommandNode) node.getUserObject();
-            if (commandNode instanceof EditableAtomicNode) {
-                EditableAtomicNode atomicNode = (EditableAtomicNode) commandNode;
+        if (node != null && node.getUserObject() instanceof GuiCommandRepresentation) {
+            GuiCommandRepresentation commandNode = (GuiCommandRepresentation) node.getUserObject();
+            if (commandNode instanceof GuiAtomicCommandRepresentation) {
+                GuiAtomicCommandRepresentation atomicNode = (GuiAtomicCommandRepresentation) commandNode;
                 typeLabel.setText("Type: " + atomicNode.type);
                 xField.setText(String.valueOf(atomicNode.x));
                 yField.setText(String.valueOf(atomicNode.y));
                 xField.setEnabled(true);
                 yField.setEnabled(true);
             } else {
-                typeLabel.setText("Composite: " + ((EditableCompositeNode)commandNode).name);
+                typeLabel.setText("Composite: " + ((GuiCompositeCommandRepresentation)commandNode).name);
                 xField.setText("");
                 yField.setText("");
                 xField.setEnabled(false);
@@ -171,8 +166,8 @@ public class CommandEditorWindow extends JFrame {
         if (isUpdatingGUI) return;
 
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
-        if (node != null && node.getUserObject() instanceof EditableAtomicNode) {
-            EditableAtomicNode atomicNode = (EditableAtomicNode) node.getUserObject();
+        if (node != null && node.getUserObject() instanceof GuiAtomicCommandRepresentation) {
+            GuiAtomicCommandRepresentation atomicNode = (GuiAtomicCommandRepresentation) node.getUserObject();
             try {
                 atomicNode.x = Integer.parseInt(xField.getText());
                 atomicNode.y = Integer.parseInt(yField.getText());
@@ -230,11 +225,10 @@ public class CommandEditorWindow extends JFrame {
             DefaultMutableTreeNode root = (DefaultMutableTreeNode) treeModel.getRoot();
             root.removeAllChildren();
 
-            TreeBuildingVisitor visitor = new TreeBuildingVisitor(root);
+            CommandToGuiNodeVisitor visitor = new CommandToGuiNodeVisitor(root);
             currentCommand.accept(visitor);
 
             treeModel.reload();
-            // Expand all rows
             for (int i = 0; i < tree.getRowCount(); i++) {
                 tree.expandRow(i);
             }
@@ -275,101 +269,17 @@ public class CommandEditorWindow extends JFrame {
             return CompoundCommand.fromListOfCommands(commands, "Edited Command");
         }
 
-        EditableCommandNode userObj = (EditableCommandNode) node.getUserObject();
-        if (userObj instanceof EditableAtomicNode) {
-            return ((EditableAtomicNode) userObj).createCommand();
-        } else if (userObj instanceof EditableCompositeNode) {
+        GuiCommandRepresentation userObj = (GuiCommandRepresentation) node.getUserObject();
+        if (userObj instanceof GuiAtomicCommandRepresentation) {
+            return ((GuiAtomicCommandRepresentation) userObj).createCommand();
+        } else if (userObj instanceof GuiCompositeCommandRepresentation) {
              List<DriverCommand> children = new ArrayList<>();
              for (int i = 0; i < node.getChildCount(); i++) {
                  DefaultMutableTreeNode child = (DefaultMutableTreeNode) node.getChildAt(i);
                  children.add(buildCommandFromNode(child));
             }
-            return CompoundCommand.fromListOfCommands(children, ((EditableCompositeNode) userObj).name);
+            return CompoundCommand.fromListOfCommands(children, ((GuiCompositeCommandRepresentation) userObj).name);
         }
         return null; // Should not happen
-    }
-
-    private static abstract class EditableCommandNode {
-        abstract DriverCommand createCommand();
-    }
-
-    private static class EditableAtomicNode extends EditableCommandNode {
-        String type;
-        int x, y;
-
-        EditableAtomicNode(SetPositionCommand cmd) {
-            type = "SetPosition";
-            x = cmd.getPosX();
-            y = cmd.getPosY();
-        }
-
-        EditableAtomicNode(OperateToCommand cmd) {
-            type = "OperateTo";
-            x = cmd.getPosX();
-            y = cmd.getPosY();
-        }
-
-        @Override
-        DriverCommand createCommand() {
-            if ("SetPosition".equals(type)) return new SetPositionCommand(x, y);
-            return new OperateToCommand(x, y);
-        }
-
-        @Override
-        public String toString() {
-            return type + " [" + x + ", " + y + "]";
-        }
-    }
-
-    private static class EditableCompositeNode extends EditableCommandNode {
-        String name;
-
-        EditableCompositeNode(String name) {
-            this.name = name;
-        }
-
-        @Override
-        DriverCommand createCommand() {
-            throw new UnsupportedOperationException("Should be handled by recursion helper");
-        }
-
-        @Override
-        public String toString() {
-            return name;
-        }
-    }
-
-    private static class TreeBuildingVisitor implements CommandVisitor {
-        private final DefaultMutableTreeNode parent;
-
-        public TreeBuildingVisitor(DefaultMutableTreeNode parent) {
-            this.parent = parent;
-        }
-
-        @Override
-        public void visit(SetPositionCommand command) {
-            parent.add(new DefaultMutableTreeNode(new EditableAtomicNode(command)));
-        }
-
-        @Override
-        public void visit(OperateToCommand command) {
-             parent.add(new DefaultMutableTreeNode(new EditableAtomicNode(command)));
-        }
-
-        @Override
-        public void visit(ICompoundCommand command) {
-            String name = "Compound Command";
-            if (command instanceof CompoundCommand) {
-                name = ((CompoundCommand) command).getName();
-            }
-            DefaultMutableTreeNode compositeNode = new DefaultMutableTreeNode(new EditableCompositeNode(name));
-            parent.add(compositeNode);
-
-            Iterator<DriverCommand> iterator = command.iterator();
-            TreeBuildingVisitor visitor = new TreeBuildingVisitor(compositeNode);
-            while (iterator.hasNext()) {
-                iterator.next().accept(visitor);
-            }
-        }
     }
 }
