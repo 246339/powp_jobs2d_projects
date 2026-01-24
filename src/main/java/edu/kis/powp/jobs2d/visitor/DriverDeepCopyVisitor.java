@@ -56,14 +56,9 @@ public class DriverDeepCopyVisitor implements DriverVisitor {
 
     @Override
     public void visit(TransformerDriverDecorator transformerDriverDecorator) {
-        Job2dDriver driver = transformerDriverDecorator.getDriver();
-        if (driver instanceof VisitableJob2dDriver) {
-            ((VisitableJob2dDriver) driver).accept(this);
-            VisitableJob2dDriver innerCopy = copy;
-            copy = new TransformerDriverDecorator(innerCopy, transformerDriverDecorator.getStrategy());
-        } else {
-            copy = new TransformerDriverDecorator(driver, transformerDriverDecorator.getStrategy());
-        }
+        transformerDriverDecorator.getDriver().accept(this);
+        VisitableJob2dDriver innerCopy = copy;
+        copy = new TransformerDriverDecorator(innerCopy, transformerDriverDecorator.getStrategy());
     }
 
     @Override

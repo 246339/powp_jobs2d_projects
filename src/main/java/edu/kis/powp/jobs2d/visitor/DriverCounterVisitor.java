@@ -31,14 +31,16 @@ public class DriverCounterVisitor implements DriverVisitor {
         private final int lineDriverAdapterCount;
         private final int transformerDriverDecoratorCount;
         private final int usageTrackingDecoratorCount;
+        private final int recordingDriverDecoratorCount;
 
         public DriverStats(int animatedDriverDecoratorCount, int loggerDriverCount, int lineDriverAdapterCount,
-                int transformerDriverDecoratorCount, int usageTrackingDecoratorCount) {
+                int transformerDriverDecoratorCount, int usageTrackingDecoratorCount, int recordingDriverDecoratorCount) {
             this.animatedDriverDecoratorCount = animatedDriverDecoratorCount;
             this.loggerDriverCount = loggerDriverCount;
             this.lineDriverAdapterCount = lineDriverAdapterCount;
             this.transformerDriverDecoratorCount = transformerDriverDecoratorCount;
             this.usageTrackingDecoratorCount = usageTrackingDecoratorCount;
+            this.recordingDriverDecoratorCount = recordingDriverDecoratorCount;
         }
 
         public int getAnimatedDriverDecoratorCount() {
@@ -61,9 +63,13 @@ public class DriverCounterVisitor implements DriverVisitor {
             return usageTrackingDecoratorCount;
         }
 
+        public int getRecordingDriverDecoratorCount() {
+            return recordingDriverDecoratorCount;
+        }
+
         public int getCount() {
             return animatedDriverDecoratorCount + loggerDriverCount + lineDriverAdapterCount
-                    + transformerDriverDecoratorCount + usageTrackingDecoratorCount;
+                    + transformerDriverDecoratorCount + usageTrackingDecoratorCount + recordingDriverDecoratorCount;
         }
     }
 
@@ -72,12 +78,13 @@ public class DriverCounterVisitor implements DriverVisitor {
         driver.accept(visitor);
         return new DriverStats(visitor.animatedDriverDecoratorCount, visitor.loggerDriverCount,
                 visitor.lineDriverAdapterCount, visitor.transformerDriverDecoratorCount,
-                visitor.usageTrackingDecoratorCount);
+                visitor.usageTrackingDecoratorCount, visitor.recordingDriverDecoratorCount);
     }
 
     @Override
     public void visit(AnimatedDriverDecorator animatedDriverDecorator) {
         animatedDriverDecoratorCount++;
+        animatedDriverDecorator.getTargetDriver().accept(this);
     }
 
     @Override
@@ -93,6 +100,7 @@ public class DriverCounterVisitor implements DriverVisitor {
     @Override
     public void visit(TransformerDriverDecorator transformerDriverDecorator) {
         transformerDriverDecoratorCount++;
+        transformerDriverDecorator.getDriver().accept(this);
     }
 
     @Override
